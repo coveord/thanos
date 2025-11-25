@@ -3,12 +3,23 @@ on:
   schedule:
     - cron: '0 * * * *'
 name: busybox-update workflow
+permissions:
+  contents: read
+
 jobs:
   checkVersionAndCreatePR:
+    permissions:
+      contents: write  # for peter-evans/create-pull-request to create branch
+      pull-requests: write  # for peter-evans/create-pull-request to create a PR
     runs-on: ubuntu-latest
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@c6295a65d1254861815972266d5933fd6e532bdf # v2.11.1
+        with:
+          egress-policy: audit
+
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
 
       - name: Run busybox updater
         run: |
@@ -17,7 +28,7 @@ jobs:
         shell: bash
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@18f7dc018cc2cd597073088f7c7591b9d1c02672 # v3.14.0
         with:
           signoff: true
           token: ${{ secrets.GITHUB_TOKEN }}
